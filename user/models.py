@@ -1,11 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Create your models here.
+# переменная для полей с нулевым значением
 NULLABLE = {'blank': True, 'null': True}
 
 
 class User(AbstractUser):
+    """Создаем пользователя через класс абстрактного пользователя без имени пользователя с авторизаией по почте"""
     username = None
     email = models.EmailField(unique=True, verbose_name='почта')
 

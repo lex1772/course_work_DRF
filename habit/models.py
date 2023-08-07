@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time, date
 
 from django.core.validators import MaxValueValidator
 from django.db import models
@@ -6,7 +6,7 @@ from django.db import models
 from user.models import User, NULLABLE
 
 
-# Create your models here.
+# Модель для привычек пользователя
 class Habit(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user', **NULLABLE)
     place = models.TextField(verbose_name='место')
@@ -22,6 +22,7 @@ class Habit(models.Model):
                                             verbose_name='время на выполнение')
     is_public = models.BooleanField(default=False, verbose_name='признак публичности')
     tg_chat_id = models.TextField(verbose_name='id чата в телеграме', **NULLABLE)
+    next_send = models.DateField(default=date.today, verbose_name='дата следующей отправки')
 
     def __str__(self):
         return f'{self.place}, {self.action}, {self.time}'

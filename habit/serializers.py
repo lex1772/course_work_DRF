@@ -1,14 +1,11 @@
-import json
-
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
 
 from habit.models import Habit
-from habit.permissions import IsOwner
 
 
 class HabitSerializer(serializers.ModelSerializer):
+    # Сериализатор для привычек с проверкой на приятную или полузкую привычку. В случае с приятной нет вознаграждения.
     user = serializers.CurrentUserDefault()
 
     def validate(self, attrs):

@@ -5,7 +5,10 @@ import psycopg2
 from config import settings
 
 
+# Файл для работы с базой данных
+
 def save_data_to_database(data: list[str, Any]):
+    # Сохранение пользовательского ввода в телеграм в базу данных
     conn = psycopg2.connect(dbname=settings.DATABASES['default']['NAME'], user=settings.DATABASES['default']['USER'],
                             password=settings.DATABASES['default']['PASSWORD'])
 
@@ -38,10 +41,11 @@ def save_data_to_database(data: list[str, Any]):
 def get_related_habit(
         conn=psycopg2.connect(dbname=settings.DATABASES['default']['NAME'], user=settings.DATABASES['default']['USER'],
                               password=settings.DATABASES['default']['PASSWORD'])):
-    """Функция, которая получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию."""
+    """Получение списка связанных привычек для выбора"""
     with conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, action, tg_chat_id FROM habit_habit WHERE good_habit_sign = 'true' AND is_public = 'true'")
+            cur.execute(
+                "SELECT id, action, tg_chat_id FROM habit_habit WHERE good_habit_sign = 'true' AND is_public = 'true'")
             rows = cur.fetchall()
             data = []
             for row in rows:

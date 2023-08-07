@@ -1,38 +1,31 @@
-import logging
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime, date
 
 from celery import shared_task
-from django_celery_beat.models import PeriodicTask, CrontabSchedule
+from celery.utils.log import get_task_logger
+from django.core.mail import send_mail
 
 from config import settings
 from habit.models import Habit
 from tg_funcs import send_to_telegram
 from user.models import User
-from celery import Celery
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# Делаем логгер для отображения информации в консоли
+logger = get_task_logger(__name__)
 
 
-@shared_task(name='my_task')
+@shared_task
 def my_task():
+    # Периодическая задача для отправки сообщений в телеграм или на почту о исполнении привычки
     habs = Habit.objects.all().values()
     for hab in habs:
-        days = ", ".join([str(i) for i in range(1, hab['frequency'] + 1)])
-        logger.info(days)
-        schedule = CrontabSchedule.objects.create(day_of_week=days, minute=hab['time'].minute, hour=hab['time'].hour)
-        task = PeriodicTask.objects.create(name='adder',
-                                           task='apps.task.add', crontab=schedule,
-                                           start_time=datetime.utcnow() + timedelta(seconds=300))
-        logger.info("task added")
-        task.save()
-        print(task)
         message = f"Сделать {hab['action']} {hab['place']}"
-        if hab['time'].hour > datetime.now().hour:
-            if hab['tg_chat_id']:
-                send_to_telegram(hab['tg_chat_id'], message)
+        if hab['time'].hour >= datetime.now().hour and hab['next_send'] >= date.today():
+            if send_to_telegram(hab['tg_chat_id'], message) is not None:
+                hab['next_send'] += timedelta(days=8 - hab['frequency'])
             else:
-                user = User.objects.get(pk=hab['user_id'])
-                user.email_user(subject="Привычка", message=message, from_email=settings.DEFAULT_FROM_EMAIL,
-                                recipient_list=[user.email])
+                if hab['user_id']:
+                    user = User.objects.filter(pk=hab['user_id']).values()
+                    user = user[0]
+                    if send_mail(subject="Привычка", message=message, from_email=settings.DEFAULT_FROM_EMAIL,
+                                 recipient_list=[user['email']]) == 1:
+                        hab['next_send'] += timedelta(days=hab['frequency'])

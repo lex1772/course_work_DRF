@@ -6,6 +6,7 @@ from user.views import UserCreateAPIView, UserListAPIView, UserRetrieveAPIView, 
 
 app_name = UserConfig.name
 
+# Урлы для приложения пользователя с токенами
 urlpatterns = [
     path('create/', UserCreateAPIView.as_view(), name='user_create'),
     path('', UserListAPIView.as_view(), name='user_list'),

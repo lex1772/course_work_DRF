@@ -5,8 +5,6 @@ from tg_funcs import start, PLACE, place, TIME, time_to_start, ACTION, action, G
     RELEATED_HABIT, related_habit, FREQUENCY, frequency, REWARD, reward, TIME_TO_COMPLETE, time_to_complete, IS_PUBLIC, \
     is_public, cancel
 
-bot = telegram.Bot(settings.TG_KEY)
-
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -16,13 +14,17 @@ from telegram.ext import (
     filters,
 )
 
+# Файл для запуска бота в телеграм
+
+# Подключаем бота
 bot = telegram.Bot(settings.TG_KEY)
 
 
 def main():
+    '''Функция для работы самого бота'''
     application = Application.builder().token(settings.TG_KEY).build()
 
-    # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
+    # Список вопросов от бота
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={

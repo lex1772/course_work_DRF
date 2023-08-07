@@ -4,6 +4,7 @@ from user.models import User
 
 
 class Command(BaseCommand):
+    # Команда для создания админа
 
     def handle(self, *args, **options):
         user = User.objects.create(
