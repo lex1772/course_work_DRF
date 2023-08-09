@@ -20,7 +20,7 @@ from telegram.ext import (
 # Подключаем бота
 bot = telegram.Bot(settings.TG_KEY)
 
-#Подключаем логи в консоль
+# Подключаем логи в консоль
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
@@ -29,13 +29,12 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-#Выводим все вопросы
+# Выводим все вопросы
 PLACE, TIME, ACTION, GOOD_HABIT_SIGN, RELEATED_HABIT, FREQUENCY, REWARD, TIME_TO_COMPLETE, IS_PUBLIC = range(9)
 
-#Переменные для работы с пользователем и привычками
+# Переменные для работы с пользователем и привычками
 habit_list = []
 ghs = ''
-rh = ''
 rel_habits = get_related_habit()
 
 
@@ -183,7 +182,6 @@ async def related_habit(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             id = hab.split(" ")
             habit_list.append(int(id[0]))
             break
-    rh = update.message.text
     if update.message.text == "/cancel":
         logger.info("User %s canceled the conversation.", user.first_name)
         await update.message.reply_text(
@@ -216,8 +214,7 @@ async def frequency(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         return ConversationHandler.END
     else:
         logger.info(print(habit_list[RELEATED_HABIT]))
-        if habit_list[GOOD_HABIT_SIGN] == "Полезная" and habit_list[RELEATED_HABIT] is None or habit_list[
-            RELEATED_HABIT] == '':
+        if habit_list[GOOD_HABIT_SIGN] == "Полезная" and habit_list[RELEATED_HABIT] is None:
             await update.message.reply_text(
                 "Какую награду ты хочешь получить за выполнение привычки?")
 
