@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: course_work_drf
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: /var/lib/postgresql/data/pgdata
+    container_name: db_app
+    user: postgres
+    env_file:
+      - .env
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data/db
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    container_name: redis_app
+    command: redis-server --save 20 1 -- loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/cache:/data
+
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+    image: app
+    container_name: app_container
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py runserver"
+
+  celery:
+    image: celery
+    container_name: celery_app
+    command: celery -A config worker -B
+    volumes:
+      - .:/app
+    links:
+      - redis
+    depends_on:
+      - app
+      - redis
+
