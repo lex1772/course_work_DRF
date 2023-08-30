@@ -12,7 +12,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./pgdata:/var/lib/postgresql/data/db
+      - pgdata:/var/lib/postgresql/data/db
     ports:
       - "5432:5432"
     healthcheck:
@@ -20,6 +20,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - main
 
   redis:
     image: redis:latest
@@ -29,11 +31,13 @@ services:
       - "6379:6379"
     volumes:
       - ./data/cache:/data
+    networks:
+      - main
 
   app:
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ./Dockerfile
     image: app
     container_name: app_container
     depends_on:
@@ -51,16 +55,29 @@ services:
       sh -c "python manage.py collectstatic --noinput &&
              python manage.py migrate &&
              python manage.py runserver"
+    networks:
+      - main
 
   celery:
-    image: celery
-    container_name: celery_app
-    command: celery -A config worker -B
-    volumes:
-      - .:/app
-    links:
-      - redis
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: course_work_drf
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: /var/lib/postgresql/data/pgdata
+    command: "celery -A config worker -l info"
     depends_on:
       - app
       - redis
+      - db
+    restart: on-failure
+    networks:
+      - main
 
+volumes:
+  pgdata:
+
+networks:
+  main:
