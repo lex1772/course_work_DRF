@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 
 from config import settings
 from habit.models import Habit
-from tg_funcs import send_to_telegram
+# import tg_funcs
 from user.models import User
 
 # Делаем логгер для отображения информации в консоли
@@ -20,9 +20,9 @@ def my_task():
     for hab in habs:
         message = f"Сделать {hab['action']} {hab['place']}"
         if hab['time'].hour >= datetime.now().hour and hab['next_send'] >= date.today():
-            if send_to_telegram(hab['tg_chat_id'], message) is not None:
-                hab['next_send'] += timedelta(days=8 - hab['frequency'])
-            else:
+            # if tg_funcs.send_to_telegram(hab['tg_chat_id'], message) is not None:
+            #     hab['next_send'] += timedelta(days=8 - hab['frequency'])
+            # else:
                 if hab['user_id']:
                     user = User.objects.filter(pk=hab['user_id']).values()
                     user = user[0]
