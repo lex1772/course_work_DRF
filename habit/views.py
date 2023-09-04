@@ -1,4 +1,3 @@
-from django_celery_beat.models import PeriodicTask, CrontabSchedule
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
@@ -20,7 +19,8 @@ class HabitCreateAPIView(generics.CreateAPIView):
 
 
 class HabitListAPIView(generics.ListAPIView):
-    '''Контролер для получения списка привычек с ограничением на аутентификацию и публичность привычки'''
+    '''Контролер для получения списка привычек
+    с ограничением на аутентификацию и публичность привычки'''
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     pagination_class = HabitPaginator
@@ -28,20 +28,23 @@ class HabitListAPIView(generics.ListAPIView):
 
 
 class HabitRetrieveAPIView(generics.RetrieveAPIView):
-    '''Контролер для просмотра привычки с ограничением на аутентификацию и публичность привычки'''
+    '''Контролер для просмотра привычки
+    с ограничением на аутентификацию и публичность привычки'''
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     permission_classes = [IsPublic | IsAuthenticated]
 
 
 class HabitUpdateAPIView(generics.UpdateAPIView):
-    '''Контролер для обновления привычки с ограничением на создателя привычки'''
+    '''Контролер для обновления привычки
+    с ограничением на создателя привычки'''
     serializer_class = HabitSerializer
     queryset = Habit.objects.all()
     permission_classes = [IsOwner]
 
 
 class HabitDestroyAPIView(generics.DestroyAPIView):
-    '''Контролер для удаления привычки с ограничением на создателя привычки'''
+    '''Контролер для удаления привычки
+    с ограничением на создателя привычки'''
     queryset = Habit.objects.all()
     permission_classes = [IsOwner]

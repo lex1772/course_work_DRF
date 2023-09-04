@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  db:
+    restart: always
+    image: postgres:14-alpine
+    user: postgres
+    container_name: db_app
+    environment:
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+      POSTGRES_DB: ${NAME}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.0.2-alpine
+    container_name: redis_app
+    command: redis-server --save 20 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    volumes:
+      - .:/app
+    command: >
+      bash -c "python manage.py collectstatic --no-input
+      && python manage.py migrate
+      && python manage.py runserver"
+
+  celery:
+    restart: always
+    build: .
+    container_name: celery_app
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${USER}
+      POSTGRES_PASSWORD: ${PASSWORD}
+      POSTGRES_DB: ${NAME}
+    command: >
+      bash -c "celery -A config worker --beat --loglevel=info"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - app
+      - redis
+
+volumes:
+  pg_data:
