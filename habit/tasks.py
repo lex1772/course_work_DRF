@@ -15,7 +15,7 @@ logger = get_task_logger(__name__)
 
 @shared_task
 def my_task():
-    # Периодическая задача для отправки сообщений в телеграм или на почту о исполнении привычки
+    # Периодическая задача для отправки сообщений в телеграм бота или на почту о исполнении привычки
     habs = Habit.objects.all().values()
     apiToken = settings.TG_KEY
     apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
