@@ -314,7 +314,7 @@ def send_to_telegram(chat_id, message):
     """Функция для отправки сообщения в телеграм"""
     apiToken = settings.TG_KEY
     apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
-    response = requests.post(apiURL, data={'chat_id': chat_id, 'text': message}).json()
+    response = requests.get(apiURL, data={'chat_id': chat_id, 'text': message}).json()
     try:
         response['error_code']
     except KeyError:
